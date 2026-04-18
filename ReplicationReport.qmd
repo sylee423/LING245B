@@ -19,11 +19,12 @@ Lee & Hawkins (2026) experimentally investigate the polarity preference in const
 
 ### Power Analysis
 
-Original effect size, power analysis for samples to achieve 80%, 90%, 95% power to detect that effect size.  Considerations of feasibility for selecting planned sample size.
+(Original effect size, power analysis for samples to achieve 80%, 90%, 95% power to detect that effect size.  Considerations of feasibility for selecting planned sample size.)
 
 ### Planned Sample
 
-Planned sample size and/or termination rule, sampling frame, known demographics if any, preselection rules if any.
+Exp1: 180 participants located in US, UK, Canada, whose primary language is English.
+Exp2: 80 participants located in US, UK, Canada, whose primary language is English.
 
 ### Materials
 
@@ -54,9 +55,15 @@ Exceptions:
 
 ### Analysis Plan
 
-Can also quote directly, though it is less often spelled out effectively for an analysis strategy section.  The key is to report an analysis strategy that is as close to the original - data cleaning rules, data exclusion rules, covariates, etc. - as possible.  
+Can also quote directly, though it is less often spelled out effectively for an analysis strategy section.  The key is to report an analysis strategy that is as close to the original - data cleaning rules, data exclusion rules, covariates, etc. - as possible. 
+[General] Data from participants who do not pass the comprehension checks will be excluded.
+[Exp1 (free response)]
+- Responses will be automatically coded as contaminated-synonymous or uncontaminated-synonymous based on keyword matching.
+- Key analysis of interest: Because goal and base rate were both between-subjects with a single trial per participant, I will analyze the data using logistic regression (without random effects) predicting predicate meaning (1: uncontaminated-synonymous, 0 : contaminated-synonymous) with goal (sum-coded), base rate (continuous, centered at 50\%), and their interaction as predictors.
 
-**Clarify key analysis of interest here**  You can also pre-specify additional analyses you plan to do.
+[Exp2 (forced-choice)]
+- Key analysis of interest: I will analyze the data using logistic regression predicting question polarity with goal (sum-coded) as the predictor.
+
 
 ### Differences from Original Study
 
