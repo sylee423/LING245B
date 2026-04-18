@@ -12,7 +12,7 @@ format:
 
 ## Introduction
 
-Lee & Hawkins (2026) experimentally investigate the polarity preference in constituent questions (CQs) depending on the decision problem that the questioner aims to solve. They find that speakers prefer to use a CQ whose polarity matches that of the proposition whose truth would facilitate their goal, an effect mitigated by informativity and the structure of the decision problem. In this study, I apply Lee and Hawkins' experimental design to polar questions (PQs) in order to find out whether the same goal-polarity alignment persists in PQs as well as CQs. 
+Lee & Hawkins (2026) experimentally investigate the polarity preference in constituent questions (CQs) depending on the decision problem that the questioner aims to solve. They find that speakers prefer to use a CQ whose polarity matches that of the proposition whose truth would facilitate their goal, an effect mitigated by informativity and the structure of the decision problem. In this study, I apply Lee and Hawkins' experimental design to polar questions (PQs) in order to find out whether the same goal-polarity alignment persists in PQs as well as CQs (mitigated by informativity; decision structure does not apply). 
 
 
 ## Methods
@@ -27,11 +27,30 @@ Planned sample size and/or termination rule, sampling frame, known demographics 
 
 ### Materials
 
-All materials - can quote directly from original article - just put the text in quotations and note that this was followed precisely.  Or, quote directly and just point out exceptions to what was described in the original article.
+(see below)
 
 ### Procedure	
+Experiment 1: "Participants were told they were a scientist working with a rack of 10 vials, some of which were contaminated but visually indistinguishable from the uncontaminated vials. Rather than being explicitly given the percentage of contaminated vials, participants were told that 'only a few / half / most' of the vials were contaminated for the '20\% / 50\% / 80\%' base rate condition respectively. In the \emph{find uncontaminated} condition, their task was to select one vial to use for an experiment; in the \emph{find contaminated} condition, their task was to select one vial to examine and identify the contaminant. They could ask one question to a colleague who does not know the status of all the vials, but knows the status of some for certain. Three comprehension check questions were employed to ensure that participants understood their goal, the respondent's knowledge state, and the base rate condition. Data from participants who did not pass the comprehension checks were excluded.
 
-Can quote directly from original article - just put the text in quotations and note that this was followed precisely.  Or, quote directly and just point out exceptions to what was described in the original article.
+On each trial, participants saw a visual representation of the vial rack, a proportion bar indicating the base rate of contamination (e.g., a bar with 20\% green and 80\% red in the 20\% base rate condition), and a goal card that reminded them of their goal without explicitly mentioning the word `contaminated' or `uncontaminated'.
+They then completed the sentence ``Which vials are \underline{\hspace{1cm}}?'' by typing a word or a phrase. After the trial, participants were asked to report their strategy in deciding what question to ask. "
+Exceptions: 
+- Will pick out one vial to ask about
+- Rather than being told that 'only a few / half / most' of the vials are contaminated, participants will be told that the vial is 'probably not / may or may not be / more likely than not' contaminated
+- Visual representation will differ accordingly
+- Participants will complete the sentence 'Is this vial [underline]?' by typing a word or a phrase, where they can choose to respond, e.g., 'contaminated', 'not comtaminated', 'clean', 'dirty', etc.
+
+Experiment 2: "The scenario was similar to Experiment 1, with two key changes.
+First, rather than completing a sentence, participants chose between two fully-formed questions: ``Which vials are contaminated?'' and ``Which vials are not contaminated?''
+Second, we manipulated decision structure through the task framing.
+In the \emph{singleton} conditions, participants were told they had to select a single vial---either to use for an experiment (find-uncontaminated) or to examine and identify the contaminant (find-contaminated).
+In the \emph{set identification} conditions, participants were told they had to sort all vials into ``Safe to Use'' and ``Dispose'' bins.
+To maintain goal alignment, participants in the find-uncontaminated condition learned that a colleague would use the ``Safe to Use'' vials for an important experiment, while participants in the find-contaminated condition learned that a safety inspector would examine the ``Dispose'' bin to verify proper handling.
+Each participant completed a single trial, followed by a strategy probe question."
+
+Exceptions:
+- Participants will choose between 'Is this vial contaminated?' and 'Is this vial not contaminated?'.
+- There will be no decision structure manipulation.
 
 ### Analysis Plan
 
@@ -41,7 +60,7 @@ Can also quote directly, though it is less often spelled out effectively for an 
 
 ### Differences from Original Study
 
-The main difference is the type of question that the 
+The main difference is the type of question that the study investigates. The original study investigated CQs, and the participants were asked to freely complete a CQ in Exp1, and performed a forced choice task between two opposite polarity CQs in Exp2 in the original study. The present replication study will keep the same free completion/forced-choice structure, but with PQs.
 
 ### Methods Addendum (Post Data Collection)
 
