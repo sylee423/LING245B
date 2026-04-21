@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Laboratory Decision Study</title>
+    <script src="https://unpkg.com/jspsych@8.0.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-button-response@2.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-html-form@2.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-text@2.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-multi-choice@2.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-instructions@2.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-preload@2.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-call-function@2.0.0"></script>
+    <link href="https://unpkg.com/jspsych@8.0.2/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <link href="styles.css" rel="stylesheet" type="text/css" />
+    <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe"></script>
+    <script src="shared.js"></script>
+</head>
+<body></body>
+<script>
+// =============================================================================
+// CONFIGURATION AND SETUP
+// =============================================================================
+
+// Get URL parameters
+const urlParams = new URLSearchParams(window.location.search);
+const prolificPID = urlParams.get('PROLIFIC_PID') || 'unknown';
+const studyID = urlParams.get('STUDY_ID') || 'unknown';
+const sessionID = urlParams.get('SESSION_ID') || 'unknown';
+
+// Experiment 1: Goal (between-subjects) x Base Rate (between-subjects)
+// 2 x 3 = 6 conditions
+const expVersion = 'exp1';
+
+// Initialize jsPsych first (needed for randomization utilities)
+const jsPsych = initJsPsych({
+    on_finish: function() {
+        const finalData = {
+            prolific_pid: prolificPID,
+            study_id: studyID,
+            session_id: sessionID,
+            exp_version: expVersion,
+            goal_condition: goalCondition,
+            base_rate_condition: baseRateCondition,
+            decision_structure: decisionStructure,
+            trials: jsPsych.data.get().values(),
+            completion_time: new Date().toISOString()
+        };
+        showCompletionScreen(jsPsych, finalData, 'C15DPSYU', prolificPID);
+    }
+});
+
+// Condition assignment (random - not via URL to avoid revealing condition)
+const goalCondition = jsPsych.randomization.sampleWithoutReplacement(['uncont', 'cont'], 1)[0];
+const baseRateCondition = jsPsych.randomization.sampleWithoutReplacement([0.2, 0.5, 0.8], 1)[0];
+
+// Exp1 is always singleton decision structure
+const decisionStructure = 'singleton';
+
+// Add metadata to all trials so it gets saved with the CSV
+jsPsych.data.addProperties({
+    prolific_pid: prolificPID,
+    study_id: studyID,
+    session_id: sessionID,
+    exp_version: expVersion,
+    goal_condition: goalCondition,
+    base_rate_condition: baseRateCondition,
+    decision_structure: decisionStructure
+});
+
+// Test mode - skip button delays for faster testing
+const testMode = urlParams.get('testMode') === 'true';
+const buttonDisableTime = testMode ? 100 : 2000;
+
+// Number of vials (10 for exp1)
+const nVials = 10;
+
+// Compute counts from base rate
+const nContaminated = Math.round(baseRateCondition * nVials);
+const nUncontaminated = nVials - nContaminated;
+
+// =============================================================================
+// EXPERIMENT-SPECIFIC HELPERS
+// =============================================================================
+
+// Goal configuration (singleton only for exp1)
+function getGoalConfig() {
+    const configs = {
+        uncont: {
+            text: 'Run your experiment successfully',
+            icon: '✓',
+            cssClass: 'uncont-goal'
+        },
+        cont: {
+            text: 'Find out the contaminant',
+            icon: '⚠',
+            cssClass: 'cont-goal'
+        }
+    };
+    return configs[goalCondition];
+}
+
+// Base rate condition
+function getBaseRate() {
+    const rates = {
+        0.2: {
+            text: 'only a few of the vials were contaminated, and most of the vials were not.',
+            keyword: 'only a few',
+            keywordInverse: 'mostly'
+        },
+        0.5: {
+            text: 'half of the vials were contaminated, and half of the vials were not.',
+            keyword: 'half',
+            keywordInverse: 'half'
+        },
+        0.8: {
+            text: 'most of the vials were contaminated, and only a few were not.',
+            keyword: 'mostly',
+            keywordInverse: 'only a few'
+        }
+    };
+    return rates[baseRateCondition];
+}
+
+
+
+
+// =============================================================================
+// TIMELINE CONSTRUCTION
+// =============================================================================
+
+let timeline = [];
+
+// -----------------------------------------------------------------------------
+// WELCOME AND CONSENT
+// -----------------------------------------------------------------------------
+
+const welcome = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: CONSENT_HTML,
+    choices: ['Continue'],
+    data: { trial_type: 'consent' }
+};
+timeline.push(welcome);
+
+// -----------------------------------------------------------------------------
+// VISUAL INSTRUCTIONS
+// -----------------------------------------------------------------------------
+
+// Generate vial states for the contamination visualization based on assigned base rate
+function generateContaminationStates() {
+    const states = Array(nVials).fill('safe');
+    const contaminatedIndices = jsPsych.randomization.sampleWithoutReplacement(
+        [...Array(nVials).keys()],
+        nContaminated
+    );
+    contaminatedIndices.forEach(i => states[i] = 'danger');
+    return states;
+}
+
+function getVisualInstructionPages() {
+    const pages = [];
+    const contaminationStates = generateContaminationStates();
+
+    // Page 1: Your Lab Bench
+    pages.push(`
+        <div class="instruction-container fade-in">
+            <h2 class="instruction-title">🧪 Your Lab Bench</h2>
+            <p class="instruction-text">You work in a laboratory with chemical solutions stored in vials.</p>
+            ${renderVialRack(nVials)}
+            <p class="instruction-text">You have <strong>${nVials} vials</strong> on your bench.</p>
+        </div>
+    `);
+
+    // Page 2: The Problem - shows base rate in narrative with proportion bar
+    pages.push(`
+        <div class="instruction-container fade-in">
+            <h2 class="instruction-title">⚠️ The Problem</h2>
+            <p class="instruction-text">While you were taking a break outside, some of the vials got contaminated.</p>
+            <p class="instruction-text">You know that ${getBaseRate().text}</p>
+            ${renderVialRack(nVials, contaminationStates)}
+            <p class="instruction-text">But you can't tell which is which just by looking!</p>
+        </div>
+    `);
+    
+    // Page 3: Your Colleague
+    pages.push(`
+        <div class="instruction-container fade-in">
+            <h2 class="instruction-title">🔬 Your Colleague</h2>
+            <div class="colleague-avatar">👨‍🔬</div>
+            <p class="instruction-text">Luckily, your colleague was in the lab when the contamination happened.</p>
+            <p class="instruction-text">They don't know the status of all the vials,
+                but they know for certain about the ones they did see.</p>
+            <div class="partial-knowledge-demo">
+                <div class="knowledge-column">
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        ${renderVial('', 'danger', false)}
+                        ${renderVial('', 'safe', false)}
+                        ${renderVial('', 'safe', false)}
+                        ${renderVial('', 'unknown', false)}
+                        ${renderVial('', 'danger', false)}
+                        ${renderVial('', 'unknown', false)}
+                        ${renderVial('', 'danger', false)}
+                        ${renderVial('', 'safe', false)}
+                    </div>
+                    <p style="font-size: 14px; color: #666;">Colleague knows some for certain, others not</p>
+                </div>
+            </div>
+        </div>
+    `);
+    
+
+    // Page 4: Your Goal (different for UNCONT vs CONT)
+    if (goalCondition === 'uncont') {
+        pages.push(`
+            <div class="instruction-container fade-in">
+                <h2 class="instruction-title">🎯 Your Goal</h2>
+                <p class="instruction-text">Your goal is to run your experiment on an <strong>uncontaminated</strong> vial.
+                    You must pick <strong>ONE</strong> vial to use.</p>
+                <div class="outcome-demo">
+                    <div class="outcome-box success">
+                        <div class="outcome-icon">✓</div>
+                        ${renderVial('', 'safe', false)}
+                        <div class="outcome-label">Success!</div>
+                        <p style="font-size: 14px; margin: 5px 0;">Picked a safe vial!</p>
+                    </div>
+                    <div class="outcome-box failure">
+                        <div class="outcome-icon">😢</div>
+                        ${renderVial('', 'danger', false)}
+                        <div class="outcome-label">Failure!</div>
+                        <p style="font-size: 14px; margin: 5px 0;">Sample ruined!</p>
+                    </div>
+                </div>
+                <div class="goal-card uncont-goal">
+                    <span class="icon">✓</span>
+                    <span><strong>Your Goal:</strong> Run experiment on an uncontaminated vial</span>
+                </div>
+            </div>
+        `);
+    } else {
+        pages.push(`
+            <div class="instruction-container fade-in">
+                <h2 class="instruction-title">🎯 Your Goal</h2>
+                <p class="instruction-text">Your goal is to analyze a <strong>contaminated</strong> vial to identify the source.
+                    You must pick <strong>ONE vial</strong> to examine.</p>
+                <div class="outcome-demo">
+                    <div class="outcome-box failure">
+                        <div class="outcome-icon">😢</div>
+                        ${renderVial('', 'safe', false)}
+                        <div class="outcome-label">Failure!</div>
+                        <p style="font-size: 14px; margin: 5px 0;">Still in the dark!</p>
+                    </div>
+                    <div class="outcome-box success">
+                        <div class="outcome-icon">✓</div>
+                        ${renderVial('', 'danger', false)}
+                        <div class="outcome-label">Success!</div>
+                        <p style="font-size: 14px; margin: 5px 0;">Contaminant identified!</p>
+                    </div>
+                </div>
+                <div class="goal-card cont-goal">
+                    <span class="icon">⚠</span>
+                    <span><strong>Your Goal:</strong> Analyze a contaminated vial</span>
+                </div>
+            </div>
+        `);
+    }
+
+    
+    // Page 5: Your Question Choice
+    pages.push(`
+        <div class="instruction-container fade-in">
+            <h2 class="instruction-title">❓ Your Question</h2>
+            <p class="instruction-text">You can ask your colleague ONE question.</p>
+            <p class="instruction-text">You'll complete a sentence that starts with:</p>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin: 25px 0; font-size: 22px;">
+                <span>"Which vials are</span>
+                <span style="border-bottom: 2px solid #333; min-width: 150px; display: inline-block;">&nbsp;</span>
+                <span>?"</span>
+            </div>
+            <p class="instruction-text">Type your completion in the text box provided.</p>
+            <p class="instruction-text">Think about what question would give you the most useful information for <strong>your goal</strong>.</p>
+        </div>
+    `);
+
+    return pages;
+}
+
+const instructions = {
+    type: jsPsychInstructions,
+    pages: getVisualInstructionPages(),
+    show_clickable_nav: true,
+    button_label_previous: 'Back',
+    button_label_next: 'Next',
+    data: { trial_type: 'instructions' }
+};
+timeline.push(instructions);
+
+// -----------------------------------------------------------------------------
+// COMPREHENSION CHECKS
+// -----------------------------------------------------------------------------
+
+timeline.push(createComprehensionCheck1(jsPsych, goalCondition, decisionStructure));
+timeline.push(createComprehensionCheck2(jsPsych));
+
+// Comprehension check 3: Base rate (to ensure participants remember)
+function createBaseRateCheck() {
+    const maxAttempts = 3;
+    let attempts = 0;
+    let passed = false;
+
+    // Generate options - when 0.5 base rate, swapped option is identical, so use different distractors
+    const correctAnswer_text = `${getBaseRate().keyword} contaminated, ${getBaseRate().keywordInverse} uncontaminated`;
+    const swapped = `${getBaseRate().keywordInverse} contaminated, ${getBaseRate().keyword} uncontaminated`;
+
+    let optionsBase;
+    if (nContaminated === nUncontaminated) {
+        // 0.5 base rate: can't use swapped (identical), use two different distractors
+        optionsBase = [
+            correctAnswer_text,
+            `only a few contaminated, mostly uncontaminated`,
+            `mostly contaminated, only a few uncontaminated`,
+            `I don't know`
+        ];
+    } else {
+        // Other base rates: use swapped + one distractor
+        const distractor = nContaminated === 2
+            ? `half contaminated, half uncontaminated`
+            : `only a few contaminated, mostly uncontaminated`;
+        optionsBase = [
+            correctAnswer_text,
+            swapped,
+            distractor,
+            `I don't know`
+        ];
+    }
+    const correctAnswer = optionsBase[0];
+    let shuffledOptions = [];
+
+    const check = {
+        type: jsPsychSurveyMultiChoice,
+        questions: function() {
+            shuffledOptions = jsPsych.randomization.shuffle([...optionsBase]);
+            return [{
+                prompt: '<strong>Comprehension Check 3:</strong> In this scenario, how many vials are contaminated vs uncontaminated?',
+                name: 'baserate_check',
+                options: shuffledOptions,
+                required: true
+            }];
+        },
+        data: { trial_type: 'comprehension_check_3' },
+        on_finish: function(data) {
+            attempts++;
+            const response = data.response.baserate_check;
+            data.correct = response === correctAnswer;
+            data.option_order = shuffledOptions;
+            passed = data.correct;
+        }
+    };
+
+    const feedback = {
+        type: jsPsychHtmlButtonResponse,
+        stimulus: function() {
+            if (passed) {
+                return `<p class="check-correct">✓ Correct! You're ready to begin.</p>`;
+            } else {
+                const attemptsLeft = maxAttempts - attempts;
+                if (attemptsLeft > 0) {
+                    return `<p class="check-incorrect">That's not quite right.</p>
+                            <p>Remember: <strong>${nContaminated} vials are contaminated</strong> and <strong>${nUncontaminated} are uncontaminated</strong>.</p>
+                            <p>You have ${attemptsLeft} attempt(s) remaining.</p>`;
+                } else {
+                    return `<p class="check-incorrect">You have exceeded the maximum attempts.</p>
+                            <p>Unfortunately, you cannot continue with this study.</p>`;
+                }
+            }
+        },
+        choices: function() {
+            if (passed) return ['Begin Trial'];
+            if (attempts >= maxAttempts) return ['Exit Study'];
+            return ['Try Again'];
+        },
+        data: { trial_type: 'comprehension_feedback_3' },
+        on_finish: function(data) {
+            if (!passed && attempts >= maxAttempts) {
+                jsPsych.endExperiment('Thank you for your time. You did not pass the comprehension checks.');
+            }
+        }
+    };
+
+    return {
+        timeline: [check, feedback],
+        loop_function: () => !passed && attempts < maxAttempts
+    };
+}
+
+timeline.push(createBaseRateCheck());
+
+// -----------------------------------------------------------------------------
+// TRIAL STIMULUS HELPER
+// -----------------------------------------------------------------------------
+
+function createTrialStimulus() {
+    return `
+        <div class="trial-container">
+            ${renderVialRack(nVials)}
+            ${renderProportionBar(baseRateCondition, nVials, true)}
+            <div class="goal-card ${getGoalConfig().cssClass}">
+                <span class="icon">${getGoalConfig().icon}</span>
+                <span><strong>Your Goal:</strong> ${getGoalConfig().text}</span>
+            </div>
+            <div class="question-prompt">
+                You ask your colleague:
+            </div>
+        </div>
+    `;
+}
+
+// -----------------------------------------------------------------------------
+// MAIN EXPERIMENTAL TRIAL (single trial)
+// -----------------------------------------------------------------------------
+
+const mainTrial = {
+    type: jsPsychSurveyHtmlForm,
+    html: function() {
+        return `
+            ${createTrialStimulus()}
+            <div class="sentence-completion">
+                <span>"Which vials are</span>
+                <input type="text" id="completion" name="completion" placeholder="type here..." autocomplete="off" required>
+                <span>?"</span>
+            </div>
+        `;
+    },
+    autofocus: 'completion',
+    button_label: 'Submit',
+    data: {
+        trial_type: 'main_trial',
+        trial_id: 'exp1_trial1',
+        base_rate: baseRateCondition,
+        exp_version: expVersion,
+        goal_condition: goalCondition,
+        decision_structure: decisionStructure
+    },
+    on_load: function() {
+        const submitBtn = document.querySelector('#jspsych-survey-html-form-next');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+            }, buttonDisableTime);
+        }
+    },
+    on_finish: function(data) {
+        data.raw_response = data.response.completion.trim();
+    }
+};
+timeline.push(mainTrial);
+
+// -----------------------------------------------------------------------------
+// POST-TASK QUESTIONS
+// -----------------------------------------------------------------------------
+
+const strategyProbe = {
+    type: jsPsychSurveyText,
+    questions: [
+        {
+            prompt: '<h3>Strategy Question</h3><p>How did you decide how to complete your question? Please describe your reasoning or strategy:</p>',
+            name: 'strategy',
+            rows: 5,
+            columns: 60,
+            required: true
+        }
+    ],
+    data: { trial_type: 'strategy_probe' }
+};
+timeline.push(strategyProbe);
+
+// -----------------------------------------------------------------------------
+// DEBRIEF
+// -----------------------------------------------------------------------------
+
+const debrief = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: DEBRIEF_HTML,
+    choices: ['Finish and Get Completion Code'],
+    data: { trial_type: 'debrief' }
+};
+timeline.push(debrief);
+
+// -----------------------------------------------------------------------------
+// DATA SAVING (DataPipe)
+// -----------------------------------------------------------------------------
+
+const subject_id = jsPsych.randomization.randomID(10);
+const filename = `${subject_id}.csv`;
+
+// Capture completion time just before saving
+const record_completion_time = {
+    type: jsPsychCallFunction,
+    func: function() {
+        jsPsych.data.addProperties({
+            completion_time: new Date().toISOString()
+        });
+    }
+};
+timeline.push(record_completion_time);
+
+const save_data = {
+    type: jsPsychPipe,
+    action: "save",
+    experiment_id: "KhHwy0u7dXlh",
+    filename: filename,
+    data_string: () => jsPsych.data.get().csv()
+};
+timeline.push(save_data);
+
+// =============================================================================
+// RUN EXPERIMENT
+// =============================================================================
+
+jsPsych.run(timeline);
+
+</script>
+</html>
