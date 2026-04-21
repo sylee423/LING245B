@@ -28,6 +28,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const prolificPID = urlParams.get('PROLIFIC_PID') || 'unknown';
 const studyID = urlParams.get('STUDY_ID') || 'unknown';
 const sessionID = urlParams.get('SESSION_ID') || 'unknown';
+// const completionCode = [TODO: fill this in with prolific completion code]
 
 // Experiment 1: Goal (between-subjects) x Base Rate (between-subjects)
 // 2 x 3 = 6 conditions
@@ -47,7 +48,7 @@ const jsPsych = initJsPsych({
             trials: jsPsych.data.get().values(),
             completion_time: new Date().toISOString()
         };
-        showCompletionScreen(jsPsych, finalData, 'C15DPSYU', prolificPID);
+        showCompletionScreen(jsPsych, finalData, completionCode, prolificPID);
     }
 });
 
@@ -169,9 +170,10 @@ function getVisualInstructionPages() {
             <h2 class="instruction-title">🧪 Your Lab Bench</h2>
             <p class="instruction-text">You work in a laboratory with chemical solutions stored in vials.</p>
             ${renderVialRack(nVials)}
-            <p class="instruction-text">You have <strong>${nVials} vials</strong> on your bench.</p>
         </div>
     `);
+    // removed <p class="instruction-text">You have <strong>${nVials} vials</strong> on your bench.</p>
+    // because the total number of vials is unimportant in polar question condition 
 
     // Page 2: The Problem - shows base rate in narrative with proportion bar
     pages.push(`
@@ -274,7 +276,7 @@ function getVisualInstructionPages() {
             <p class="instruction-text">You can ask your colleague ONE question.</p>
             <p class="instruction-text">You'll complete a sentence that starts with:</p>
             <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin: 25px 0; font-size: 22px;">
-                <span>"Which vials are</span>
+                <span>"Is this vial</span>
                 <span style="border-bottom: 2px solid #333; min-width: 150px; display: inline-block;">&nbsp;</span>
                 <span>?"</span>
             </div>
