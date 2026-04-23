@@ -406,7 +406,7 @@ timeline.push(createBaseRateCheck());
 function createTrialStimulus() {
     return `
         <div class="trial-container">
-            ${renderVialRack(nVials)}
+            ${renderVialRack(1)}
             ${renderProportionBar(baseRateCondition, nVials, true)}
             <div class="goal-card ${getGoalConfig().cssClass}">
                 <span class="icon">${getGoalConfig().icon}</span>
