@@ -496,7 +496,6 @@ timeline.push(debrief);
 // -----------------------------------------------------------------------------
 // DATA SAVING (DataPipe)
 // -----------------------------------------------------------------------------
-
 const subject_id = jsPsych.randomization.randomID(10);
 const filename = `${subject_id}.csv`;
 
@@ -511,13 +510,12 @@ const record_completion_time = {
 };
 timeline.push(record_completion_time);
 
-//save to osf storage
 const save_data = {
     type: jsPsychPipe,
     action: "save",
     experiment_id: "ascB38wJruZW",
     filename: filename,
-    data_string: () => jsPsych.data.get().csv()
+    data_string: ()=>jsPsych.data.get().csv()
 };
 
 timeline.push(save_data);
