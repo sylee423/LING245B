@@ -283,4 +283,18 @@ const timeline = [
   debrief
 ];
 
+// --- Datapipe ---
+const subject_id = jsPsych.randomization.randomID(10);
+const filename = `${subject_id}.csv`;
+
+const save_data = {
+  type: jsPsychPipe,
+  action: "save",
+  experiment_id: "prgV5Tq8Qfz0",
+  filename: filename,
+  data_string: ()=>jsPsych.data.get().csv()
+};
+
+timeline.push(save_data);
+
 jsPsych.run(timeline);
