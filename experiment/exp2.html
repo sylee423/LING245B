@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Laboratory Decision Study</title>
+    <script src="https://unpkg.com/jspsych@8.0.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-button-response@2.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-html-form@2.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-text@2.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-multi-choice@2.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-instructions@2.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-preload@2.0.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-call-function@2.0.0"></script>
+    <link href="https://unpkg.com/jspsych@8.0.2/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <link href="styles.css" rel="stylesheet" type="text/css" />
+    <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe"></script>
+    <script src="shared.js"></script>
+</head>
+<body></body>
+<script>
+// =============================================================================
+// CONFIGURATION AND SETUP
+// =============================================================================
+
+// Get URL parameters
+const urlParams = new URLSearchParams(window.location.search);
+const prolificPID = urlParams.get('PROLIFIC_PID') || 'unknown';
+const studyID = urlParams.get('STUDY_ID') || 'unknown';
+const sessionID = urlParams.get('SESSION_ID') || 'unknown';
+// const completionCode = [TODO: fill this in with prolific completion code]s
+
+// Experiment 2: Goal (between-subjects). cf: no decision structure manipulation, as we're only asking about one vial!
+const expVersion = 'exp2';
+
+// Condition assignment (can be set via URL or random)
+let goalCondition = urlParams.get('goal') || null;  // 'uncont' or 'cont'
+const decisionStructure = 'singleton';  
+
+// Random assignment if not specified
+if (!goalCondition) {
+    goalCondition = Math.random() < 0.5 ? 'uncont' : 'cont';
+}
+
+// if (!decisionStructure) {
+//     decisionStructure = Math.random() < 0.5 ? 'singleton' : 'set_id';
+// }
+
+// Test mode - skip button delays for faster testing
+const testMode = urlParams.get('testMode') === 'true';
+const buttonDisableTime = testMode ? 100 : 2000;
+
+// Number of vials (10, identical to exp1)
+const nVials = 10;
+
+// Base Rate (fixed as 0.5 for exp2)
+const base_rate_const = 0.5;
+
+// Question options for forced choice
+const questionOptions = [
+    "Is this vial contaminated?",
+    "Is this vial not contaminated?"
+];
+
+// =============================================================================
+// EXPERIMENT-SPECIFIC HELPERS
+// =============================================================================
+
+// Consolidated goal configuration
+function getGoalConfig() {
+    const configs = {
+        singleton: {
+            uncont: {
+                text: 'Run the experiment successfully',
+                icon: '✓',
+                cssClass: 'uncont-goal'
+            },
+            cont: {
+                text: 'Identify the contaminant',
+                icon: '⚠',
+                cssClass: 'cont-goal'
+            }
+        },
+        set_id: {
+            uncont: {
+                text: 'Sort all vials. Dr. Smith will use vials from <strong>"Safe to Use"</strong> for an experiment tomorrow',
+                icon: '🔬',
+                cssClass: 'uncont-goal'
+            },
+            cont: {
+                text: 'Sort all vials. A safety inspector will examine <strong>"Dispose"</strong> to verify proper handling',
+                icon: '📋',
+                cssClass: 'cont-goal'
+            }
+        }
+    };
+    return configs[decisionStructure][goalCondition];
+}
+
+// =============================================================================
+// JSPSYCH INITIALIZATION
+// =============================================================================
+
+const jsPsych = initJsPsych({
+    on_finish: function() {
+        const finalData = {
+            prolific_pid: prolificPID,
+            study_id: studyID,
+            session_id: sessionID,
+            exp_version: expVersion,
+            goal_condition: goalCondition,
+            decision_structure: decisionStructure,
+            trials: jsPsych.data.get().values(),
+            completion_time: new Date().toISOString()
+        };
+        showCompletionScreen(jsPsych, finalData, completionCode, prolificPID);
+    }
+});
+
+// Add metadata to all trials so it gets saved with the CSV
+jsPsych.data.addProperties({
+    prolific_pid: prolificPID,
+    study_id: studyID,
+    session_id: sessionID,
+    exp_version: expVersion,
+    goal_condition: goalCondition,
+    base_rate_condition: base_rate_const,
+    decision_structure: decisionStructure
+});
+
+// =============================================================================
+// TIMELINE CONSTRUCTION
+// =============================================================================
+
+let timeline = [];
+
+// -----------------------------------------------------------------------------
+// WELCOME AND CONSENT
+// -----------------------------------------------------------------------------
+
+const welcome = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: CONSENT_HTML,
+    choices: ['Continue'],
+    data: { trial_type: 'consent' }
+};
+timeline.push(welcome);
+
+// -----------------------------------------------------------------------------
+// VISUAL INSTRUCTIONS (5 pages)
+// -----------------------------------------------------------------------------
+
+function getVisualInstructionPages() {
+    const pages = [];
+
+    // Page 1: Your Lab Bench
+    pages.push(`
+        <div class="instruction-container fade-in">
+            <h2 class="instruction-title">🧪 Your Lab Bench</h2>
+            <p class="instruction-text">You work in a laboratory with chemical solutions stored in vials.</p>
+            ${renderVialRack(nVials)}
+            <p class="instruction-text">You have <strong>${nVials} vials</strong> on your bench.</p>
+        </div>
+    `);
+
+    // Page 2: The Problem
+    pages.push(`
+        <div class="instruction-container fade-in">
+            <h2 class="instruction-title">⚠️ The Problem</h2>
+            <p class="instruction-text">While you were taking a break outside, ${base_rate_const * nVials} of the vials got contaminated,
+                while ${nVials - (base_rate_const * nVials)} were left intact.</p>
+            ${renderVialRack(nVials, states = ['safe', 'danger', 'danger', 'danger', 'safe', 'safe', 'safe', 'danger', 'safe', 'danger'])}
+            <p class="instruction-text">But you can't tell which is which just by looking!</p>
+        </div>
+    `);
+
+    // Page 3: Your Colleague
+    pages.push(`
+        <div class="instruction-container fade-in">
+            <h2 class="instruction-title">🔬 Your Colleague</h2>
+            <div class="colleague-avatar">👨‍🔬</div>
+            <p class="instruction-text">Luckily, your colleague was in the lab when the contamination happened.</p>
+            <p class="instruction-text">They don't know the status of all the vials,
+                but they know for certain about the ones they did see.</p>
+            <div class="partial-knowledge-demo">
+                <div class="knowledge-column">
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        ${renderVial('', 'danger', false)}
+                        ${renderVial('', 'safe', false)}
+                        ${renderVial('', 'safe', false)}
+                        ${renderVial('', 'unknown', false)}
+                        ${renderVial('', 'danger', false)}
+                        ${renderVial('', 'unknown', false)}
+                        ${renderVial('', 'danger', false)}
+                        ${renderVial('', 'safe', false)}
+                    </div>
+                    <p style="font-size: 14px; color: #666;">Colleague knows some for certain, others not</p>
+                </div>
+            </div>
+        </div>
+    `);
+
+
+    // Page 4: Your Goal (different for UNCONT vs CONT, singleton vs set_id)
+    if (decisionStructure === 'singleton') {
+        if (goalCondition === 'uncont') {
+            pages.push(`
+                <div class="instruction-container fade-in">
+                    <h2 class="instruction-title">🎯 Your Goal</h2>
+                    <p class="instruction-text">Your goal is to run your experiment on an <strong>uncontaminated</strong> vial. 
+                    You must pick <strong>ONE</strong> vial to use.</p>
+                    <div class="outcome-demo">
+                        <div class="outcome-box success">
+                            <div class="outcome-icon">✓</div>
+                            ${renderVial('', 'safe', false)}
+                            <div class="outcome-label">Success!</div>
+                            <p style="font-size: 14px; margin: 5px 0;">Picked a safe vial</p>
+                        </div>
+                        <div class="outcome-box failure">
+                            <div class="outcome-icon">😢</div>
+                            ${renderVial('', 'danger', false)}
+                            <div class="outcome-label">Failure!</div>
+                            <p style="font-size: 14px; margin: 5px 0;">Sample ruined</p>
+                        </div>
+                    </div>
+                    <div class="goal-card uncont-goal">
+                        <span class="icon">✓</span>
+                        <span><strong>Your Goal:</strong> Run experiment on an uncontaminated vial</span>
+                    </div>
+                </div>
+            `);
+        } else {
+            pages.push(`
+                <div class="instruction-container fade-in">
+                    <h2 class="instruction-title">🎯 Your Goal</h2>
+                    <p class="instruction-text">Your goal is to find out the contaminant by examining a <strong>contaminated</strong> vial. 
+                    You must pick <strong>ONE vial</strong> to examine.</p>
+                    <div class="outcome-demo">
+                        <div class="outcome-box failure">
+                            <div class="outcome-icon">😢</div>
+                            ${renderVial('', 'safe', false)}
+                            <div class="outcome-label">Failure!</div>
+                            <p style="font-size: 14px; margin: 5px 0;">Still in the dark!</p>
+                        </div>
+                        <div class="outcome-box success">
+                            <div class="outcome-icon">✓</div>
+                            ${renderVial('', 'danger', false)}
+                            <div class="outcome-label">Success!</div>
+                            <p style="font-size: 14px; margin: 5px 0;">Contaminant identified!</p>
+                        </div>
+                    </div>
+                    <div class="goal-card cont-goal">
+                        <span class="icon">⚠</span>
+                        <span><strong>Your Goal:</strong> Find out the contaminant in a contaminated vial</span>
+                    </div>
+                </div>
+            `);
+        }
+    } else {
+        // set_id condition
+        if (goalCondition === 'uncont') {
+            pages.push(`
+                <div class="instruction-container fade-in">
+                    <h2 class="instruction-title">🎯 Your Task</h2>
+                    <p class="instruction-text">You need to find as many <strong>uncontaminated</strong> samples as possible for an experiment.</p>
+                    <div class="sorting-demo">
+                        <div class="sorting-bin safe-bin">
+                            <div class="bin-icon">🔬</div>
+                            <div class="bin-label">Safe to Use</div>
+                        </div>
+                        <div class="sorting-bin dispose-bin">
+                            <div class="bin-icon">🗑</div>
+                            <div class="bin-label">Dispose</div>
+                        </div>
+                    </div>
+                    <div class="goal-card uncont-goal">
+                        <span class="icon">🔬</span>
+                        <span><strong>Dr. Smith</strong> will use the vials from "Safe to Use" for an important experiment tomorrow.</span>
+                    </div>
+                    <p class="instruction-text">Your score depends on how well the experiment goes!</p>
+                </div>
+            `);
+        } else {
+            pages.push(`
+                <div class="instruction-container fade-in">
+                    <h2 class="instruction-title">🎯 Your Task</h2>
+                    <p class="instruction-text">You need to remove as many <strong>contaminated</strong> vials as possible.</p>
+                    <div class="sorting-demo">
+                        <div class="sorting-bin safe-bin">
+                            <div class="bin-icon">🔬</div>
+                            <div class="bin-label">Safe to use</div>
+                        </div>
+                        <div class="sorting-bin dispose-bin">
+                            <div class="bin-icon">📋</div>
+                            <div class="bin-label">Dispose</div>
+                        </div>
+                    </div>
+                    <div class="goal-card cont-goal">
+                        <span class="icon">📋</span>
+                        <span><strong>A safety inspector</strong> will examine "Dispose" to make sure hazardous materials were properly removed.</span>
+                    </div>
+                    <p class="instruction-text">Your score depends on how well you removed the contaminated vials!</p>
+                </div>
+            `);
+        }
+    }
+
+
+    // Page 5: Your Question Choice
+    pages.push(`
+        <div class="instruction-container fade-in">
+            <h2 class="instruction-title">❓ Your Question</h2>
+            <p class="instruction-text">Picking one vial at random, you will ask your colleague <strong>ONE</strong> of two questions:</p>
+            <div style="display: flex; justify-content: center; gap: 20px; margin: 25px 0; flex-wrap: wrap;">
+                <div class="question-btn" style="cursor: default;">
+                    "Is this vial <strong style="color: var(--danger-color);">contaminated</strong>?"
+                </div>
+                <div class="question-btn" style="cursor: default;">
+                    "Is this vial <strong style="color: var(--safe-color);">not contaminated</strong>?"
+                </div>
+            </div>
+            <p class="instruction-text">Think about which question would give you the most useful information for <strong>your goal</strong>.</p>
+            <div class="instruction-emphasis">
+                You'll complete <strong>1 trial</strong>.
+            </div>
+        </div>
+    `);
+
+    return pages;
+}
+
+const instructions = {
+    type: jsPsychInstructions,
+    pages: getVisualInstructionPages(),
+    show_clickable_nav: true,
+    button_label_previous: 'Back',
+    button_label_next: 'Next',
+    data: { trial_type: 'instructions' }
+};
+timeline.push(instructions);
+
+// -----------------------------------------------------------------------------
+// COMPREHENSION CHECKS (using shared functions)
+// -----------------------------------------------------------------------------
+
+timeline.push(createComprehensionCheck1(jsPsych, goalCondition, decisionStructure));
+timeline.push(createComprehensionCheck2(jsPsych));
+
+// -----------------------------------------------------------------------------
+// TRIAL STIMULUS HELPER
+// -----------------------------------------------------------------------------
+
+function createTrialStimulus() {
+    const baseRate = 0.5;  // Fixed at 50% for exp2
+    return `
+        <div class="trial-container">
+            ${renderVialRack(nVials, states = jsPsych.randomization.shuffle(['unknown','unknown','unknown','unknown','unknown','unknown','unknown','unknown','unknown','chosen']))}
+            <div class="goal-card ${getGoalConfig().cssClass}">
+                <span class="icon">${getGoalConfig().icon}</span>
+                <span><strong>Your Goal:</strong> ${getGoalConfig().text}</span>
+            </div>
+            <div class="question-prompt">
+                You ask your colleague:
+            </div>
+        </div>
+    `;
+}
+
+// -----------------------------------------------------------------------------
+// MAIN EXPERIMENTAL TRIAL (single trial for exp2)
+// -----------------------------------------------------------------------------
+
+let mainTrialButtonOrder = [];
+
+const mainTrial = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: createTrialStimulus(),
+    choices: questionOptions,
+    on_start: function(trial) {
+        mainTrialButtonOrder = jsPsych.randomization.shuffle([...questionOptions]);
+        trial.choices = mainTrialButtonOrder;
+    },
+    data: {
+        trial_type: 'main_trial',
+        trial_id: 'exp2_trial1',
+        base_rate: 0.5,
+        exp_version: expVersion,
+        goal_condition: goalCondition,
+        decision_structure: decisionStructure
+    },
+    on_finish: function(data) {
+        data.button_order = [...mainTrialButtonOrder];
+        data.chosen_question = mainTrialButtonOrder[data.response];
+        data.chose_positive = data.chosen_question === "Is this vial contaminated?";
+        data.chose_negative = data.chosen_question === "Is this vial not contaminated?";
+    },
+    button_html: (choice) => `<button class="jspsych-btn" style="min-width: 300px;">${choice}</button>`,
+    on_load: function() { disableButtonsTemporarily(buttonDisableTime); }
+};
+timeline.push(mainTrial);
+
+// -----------------------------------------------------------------------------
+// POST-TASK QUESTIONS
+// -----------------------------------------------------------------------------
+
+const strategyProbe = {
+    type: jsPsychSurveyText,
+    questions: [
+        {
+            prompt: '<h3>Strategy Question</h3><p>How did you decide which question to ask? Please describe your reasoning or strategy:</p>',
+            name: 'strategy',
+            rows: 5,
+            columns: 60,
+            required: true
+        }
+    ],
+    data: { trial_type: 'strategy_probe' }
+};
+timeline.push(strategyProbe);
+
+// -----------------------------------------------------------------------------
+// DEBRIEF
+// -----------------------------------------------------------------------------
+
+const debrief = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: DEBRIEF_HTML,
+    choices: ['Finish and Get Completion Code'],
+    data: { trial_type: 'debrief' }
+};
+timeline.push(debrief);
+
+const subject_id = jsPsych.randomization.randomID(10);
+const filename = `${subject_id}.csv`;
+
+// Capture completion time just before saving
+const record_completion_time = {
+    type: jsPsychCallFunction,
+    func: function() {
+        jsPsych.data.addProperties({
+            completion_time: new Date().toISOString()
+        });
+    }
+};
+timeline.push(record_completion_time);
+
+           
+const save_data = {
+    type: jsPsychPipe,
+    action: "save",
+    experiment_id: "rxhTxYwWKWwy",
+    filename: filename,
+    data_string: ()=>jsPsych.data.get().csv()
+};
+timeline.push(save_data);	
+// =============================================================================
+// RUN EXPERIMENT
+// =============================================================================
+
+jsPsych.run(timeline);
+
+</script>
+</html>
