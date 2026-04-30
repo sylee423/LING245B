@@ -157,6 +157,31 @@
     box-shadow: 0 0 10px var(--danger-glow);
 }
 
+/* chosen vial for stimulus */
+.vial.chosen .vial-liquid {
+    background: rgba(0, 0, 0, 0.422);
+}
+
+.vial.chosen .vial-body{
+    background: rgba(156, 182, 231, 0.926);
+    border: 2px solid rgba(7, 47, 139, 0.922);
+}
+
+.vial.chosen::after{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 15px;
+    background: rgba(156, 182, 231, 0.926);
+    border: 2px solid rgba(7, 47, 139, 0.922);
+    border-bottom: none;
+    z-index: 1;
+}
+
+
 /* Vial label */
 .vial-label {
     font-size: 14px;
@@ -178,6 +203,7 @@
 }
 
 .vial.unknown .vial-status::after { content: '?'; color: #555; }
+.vial.chosen .vial-status::after { content: '?'; color: #555; }
 /*.vial.safe .vial-status::after { content: '✓'; color: #1b5e20; }*/
 .vial.danger .vial-status::after { content: '∘˙○˚'; color: #b71c1c; }
 

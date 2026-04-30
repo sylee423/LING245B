@@ -327,9 +327,10 @@ function createBaseRateCheck() {
         ];
     } else {
         // Other base rates: use swapped + one distractor
-        const distractor = nContaminated === 2
-            ? `half contaminated, half uncontaminated`
-            : `only a few contaminated, mostly uncontaminated`;
+        // const distractor = nContaminated === 2
+        //     ? `half contaminated, half uncontaminated`
+        //     : `only a few contaminated, mostly uncontaminated`;
+        const distractor = `half contaminated, half uncontaminated`;
         optionsBase = [
             correctAnswer_text,
             swapped,
@@ -406,7 +407,7 @@ timeline.push(createBaseRateCheck());
 function createTrialStimulus() {
     return `
         <div class="trial-container">
-            ${renderVialRack(1)}
+            ${renderVialRack(nVials, states = jsPsych.randomization.shuffle(['unknown','unknown','unknown','unknown','unknown','unknown','unknown','unknown','unknown','chosen']))}
             ${renderProportionBar(baseRateCondition, nVials, true)}
             <div class="goal-card ${getGoalConfig().cssClass}">
                 <span class="icon">${getGoalConfig().icon}</span>
