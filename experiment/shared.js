@@ -103,31 +103,61 @@ function disableButtonsTemporarily(duration) {
 // CONSENT FORM
 // -----------------------------------------------------------------------------
 
-const CONSENT_HTML = `
-    <h2 style="text-align: center;">STANFORD UNIVERSITY</h2>
-    <h3 style="text-align: center;">Research Information Sheet</h3>
-    <div class="instructions-box" style="font-size: 15px; line-height: 1.5;">
-        <p><strong>Protocol Director:</strong> Robert Hawkins<br>
-        <strong>Protocol Title:</strong> Communication and social cognition in natural audiovisual contexts<br>
-        <strong>IRB#</strong> 77226</p>
-
-        <p><strong>DESCRIPTION:</strong> You are invited to participate in a research study about language and communication. The purpose of the research is to understand how people formulate questions to gather information in uncertain situations. This research will be conducted through the Prolific platform, including participants from the US, UK, and Canada.</p>
-
-        <p><strong>TIME INVOLVEMENT:</strong> The task will last the amount of time advertised on Prolific. You are free to withdraw from the study at any time.</p>
-
-        <p><strong>RISKS AND BENEFITS:</strong> Study data will be stored securely, in compliance with Stanford University standards, minimizing the risk of confidentiality breach. This study advances our scientific understanding of how people communicate and make decisions. We cannot and do not guarantee or promise that you will receive any benefits from this study.</p>
-
-        <p><strong>PAYMENTS:</strong> You will receive payment in the amount advertised on Prolific. If you do not complete this study, you will receive prorated payment based on the time that you have spent.</p>
-
-        <p><strong>PARTICIPANT'S RIGHTS:</strong> If you have read this form and have decided to participate in this project, please understand your participation is voluntary and you have the right to withdraw your consent or discontinue participation at any time without penalty or loss of benefits to which you are otherwise entitled. The alternative is not to participate. You have the right to refuse to answer particular questions. The results of this research study may be presented at scientific or professional meetings or published in scientific journals. Your individual privacy will be maintained in all published and written data resulting from the study. In accordance with scientific norms, the data from this study may be used or shared with other researchers for future research (after removing personally identifying information) without additional consent from you.</p>
-
-        <p><strong>CONTACT INFORMATION:</strong><br>
-        <em>Questions:</em> If you have any questions, concerns or complaints about this research, its procedures, risks and benefits, contact the Protocol Director, Robert Hawkins (rdhawkins@stanford.edu).<br><br>
-        <em>Independent Contact:</em> If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at 650-723-2480 or toll free at 1-866-680-2906, or email at irb2-manager@stanford.edu. You can also write to the Stanford IRB, Stanford University, 1705 El Camino Real, Palo Alto, CA 94306.</p>
-
-        <p style="text-align: center; margin-top: 20px;"><strong>Please save or print a copy of this page for your records.<br>If you agree to participate in this research, please click "Continue".</strong></p>
+const consent_trial = {
+    type: jsPsychHtmlButtonResponse,
+    stimulus: `
+    <div class="consent-text"> 
+    <h2>Consent Agreement</h2> 
+    <p>Please read this consent agreement carefully before deciding whether to participate in this experiment. </p> 
+    <p> <strong>Description:</strong> You are invited to participate in a research study about language and language learning. 
+    The purpose of the research is to understand how people learn new words. 
+    This research will be conducted through the Prolific platform, including participants from the US, UK, and Canada. 
+    If you decide to participate in this research, you will learn and use new words. </p>
+    <p> <strong>Time Involvement:</strong> The task will last the amount of time advertised on Prolific. You are free to withdraw from the study at any time.  </p> 
+    <p> <strong>Risks and Benefits:</strong> Study data will be stored securely, in compliance with Stanford University standards, minimizing the risk of confiden-tiality breach. 
+    This study advances our scientific understanding of how people learn new languages. 
+    We cannot and do not guarantee or promise that you will receive any benefits from this study. </p> 
+    <p> <strong>Compensation:</strong> You will receive payment in the amount advertised on Prolific. 
+    If you do not complete this study, you will receive prorated payment based on the time that you have spent. 
+    Additionally, you may be eligible for bonus payments as described in the instructions. </p> 
+    <p> <strong>Participant's Rights:</strong> If you have read this form and have decided to participate in this project, please understand your participation is voluntary and you have the right to withdraw your consent or discontinue participation at any time without penalty or loss of benefits to which you are otherwise entitled. 
+    The alternative is not to participate. 
+    You have the right to refuse to answer particular questions. 
+    The results of this research study may be presented at scientific or professional meetings or published in scientific journals. 
+    Your individual privacy will be maintained in all published and writ-ten data resulting from the study. 
+    In accordance with scientific norms, the data from this study may be used or shared with other researchers for future research (after removing personally identifying information) without additional consent from you. </p> 
+    <p> <strong>Contact Information:</strong> If you have any questions, concerns or complaints about this research, its procedures, risks and benefits, contact the Protocol Director, Robert Hawkins (<a href="mailto:rdhawkins@stanford.edu">rdhawkins@stanford.edu</a>, 217-549-6923). </p> 
+    <p> <strong>Independant Contact:</strong> If you are not satisfied with how this study is being conducted, or if you have any concerns, com-plaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at 650-723-2480 or toll free at 1-866-680-2906, or email at irbnonmed@stanford.edu. 
+    You can also write to the Stanford IRB, Stanford University, 1705 El Camino Real, Palo Alto, CA 94306. 
+    Please save or print a copy of this page for your records. </p> 
+    <p> <strong>If you agree to participate in this research, please click "I agree"</strong> </p></br> 
     </div>
-`;
+    `,
+    choices: ['I agree', 'I do not agree'],
+    button_html: function(choice, choice_index) {
+        const buttonClass = choice_index === 0 ? 'consent-button agree' : 'consent-button disagree';
+        return `<button class="${buttonClass}">${choice}</button>`;
+    },
+    data: {
+        trial_type: 'consent'
+    },
+    on_finish: function(data) {
+         // Record consent response
+         // response is the index of the button clicked (0 = "I agree", 1 = "I do not agree")
+          data.consent_response = data.response === 0 ? 'agree' : 'disagree';
+          data.consent_timestamp = new Date().toISOString();
+          
+          // If participant does not agree, end experiment
+          if (data.response === 1) { // "I do not agree" is the second button (index 1)
+          jsPsych.endExperiment(`
+            <div class="instruction-text">
+            <h2>Thank you</h2>
+             <p>You have chosen not to participate. Thank you for your time.</p>
+             </div>
+             `);
+            }
+      }
+      };
 
 // -----------------------------------------------------------------------------
 // DEMOGRAPHICS FORM

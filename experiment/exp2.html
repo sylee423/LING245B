@@ -138,13 +138,15 @@ let timeline = [];
 // WELCOME AND CONSENT
 // -----------------------------------------------------------------------------
 
-const welcome = {
-    type: jsPsychHtmlButtonResponse,
-    stimulus: CONSENT_HTML,
-    choices: ['Continue'],
-    data: { trial_type: 'consent' }
-};
-timeline.push(welcome);
+// const welcome = {
+//     type: jsPsychHtmlButtonResponse,
+//     stimulus: consent_trial,
+//     choices: ['Continue'],
+//     data: { trial_type: 'consent' }
+// };
+// timeline.push(welcome);
+
+timeline.push(consent_trial);
 
 // -----------------------------------------------------------------------------
 // VISUAL INSTRUCTIONS (5 pages)
