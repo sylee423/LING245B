@@ -227,7 +227,7 @@ const DEBRIEF_HTML = `
         <p><strong>Purpose of this study:</strong></p>
         <p>This study investigates how people choose to phrase questions when seeking information.
         Specifically, we are interested in whether people's goals influence which question they ask—for example,
-        whether asking "Which are contaminated?" vs. "Which are uncontaminated?" depends on what the person
+        whether asking "Is this vial contaminated?" vs. "Is this vial not contaminated?" depends on what the person
         wants to accomplish.</p>
 
         <p><strong>What we're studying:</strong></p>
