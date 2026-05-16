@@ -109,7 +109,7 @@ const consent_trial = {
     <div class="consent-text"> 
     <h2>Consent Agreement</h2> 
     <p>Please read this consent agreement carefully before deciding whether to participate in this experiment. </p> 
-    <p> <strong>Description:</strong> You are invited to participate in a research study about language and language learning. 
+    <p> <strong>Description:</strong> You are invited to participate in a research study about language. 
     The purpose of the research is to understand how people choose between different forms of questions. 
     This research will be conducted through the Prolific platform, including participants from the US, UK, and Canada. 
     If you decide to participate in this research, you will read a scenario and ask a question appropriate in the scenario. </p>
