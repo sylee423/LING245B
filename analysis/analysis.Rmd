@@ -1,0 +1,18 @@
+---
+title: "LING245B"
+author: "LEE, Seo-young"
+date: "2026-05-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(tidyboot)
+library(ggthemes)
+library(here)
+knitr::opts_knit$set(root.dir = "~/Documents/2025-Sp/MethPsych/LING245B/analysis/")
+# Path for saving figures
+fig_path <- here("analysis", "figures")
+dir.create(fig_path, showWarnings = FALSE, recursive = TRUE)
+```
+
