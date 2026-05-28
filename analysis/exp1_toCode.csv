@@ -7,7 +7,6 @@ prolific_pid,goal_condition,base_rate,raw_response,trial_id,decision_structure,s
 6a063bf528833b226bcdeee2,uncont,0.5,Blue,exp1_trial1,singleton,"{""strategy"":""There was only one blue vial""}",blue,FALSE,FALSE
 55ad5706fdf99b649ca5a47c,uncont,0.2,Green,exp1_trial1,singleton,"{""strategy"":""The colour of the vial is red if contaminated ""}",green,FALSE,FALSE
 69fc5f437a0bc01dafe50d5c,cont,0.5,in the green or the red zone,exp1_trial1,singleton,"{""strategy"":""I asked this question because it will instantly eliminate half of my options. Then I can examine the remaining five, instead of the whole batch. This creates time efficiency with my investigations. ""}",in the green or the red zone,FALSE,FALSE
-6a060e333af0030611440211,uncont,0.5,causing a chemical reaction,exp1_trial1,singleton,"{""strategy"":""If a vial was contaminated, it may cause a visible chemical reaction such as bubbling, fizzing or colour change.""}",causing a chemical reaction,FALSE,FALSE
 6a02ff38ba724d6d369e361e,cont,0.8,one that you know about,exp1_trial1,singleton,"{""strategy"":""I decided to ask them what they knew for certain""}",one that you know about,FALSE,FALSE
 69f534af41557cc2ac117753,uncont,0.2,red,exp1_trial1,singleton,"{""strategy"":""If its red we know its contaminated.""}",red,FALSE,FALSE
 69f4ec6384f2e67c65b9a7a9,cont,0.5,ble,exp1_trial1,singleton,"{""strategy"":""reading ""}",ble,FALSE,FALSE

@@ -35,7 +35,7 @@ dat_exp1 <-
   filter(!is.na(base_rate)) |>
   select(prolific_pid, goal_condition, base_rate, raw_response,
          trial_id, decision_structure, `survey-text`) |>
-  filter(!prolific_pid %in% c("6a08cd699b922a496ade5118", "6a0f01e87b645c17f1f77084"))|>
+  filter(!prolific_pid %in% c("6a08cd699b922a496ade5118", "6a0f01e87b645c17f1f77084", "6a060e333af0030611440211", "69bfa90568c64f3e06f1a32e", "6a0cdb1f925e91092971e70c"))|>
   mutate(
     base_rate = factor(base_rate),
     goal_condition = factor(goal_condition, levels = c("uncont", "cont")),
@@ -216,6 +216,7 @@ dat_exp2 <- dat_exp2_raw |>
   select(prolific_pid, goal_condition, decision_structure,
          chosen_question, chose_positive, chose_negative,
          base_rate, trial_id, `survey-text`) |>
+  filter(!prolific_pid %in% c("666efb72703de8fb31acc194"))|>
   mutate(
     goal_condition = factor(goal_condition, levels = c("uncont", "cont")),
     decision_structure = factor(decision_structure, levels = c("singleton", "set_id")),
@@ -290,7 +291,7 @@ summary(mod_exp2)
 
 **Exp2 Key findings:**
 
-- Marginally significant main effect of goal (β = 0.69, z = 2.41, p = 0.016)
+- Marginally significant main effect of goal (β = 0.70, z = 2.85, p = 0.013)
 
 ---
 
