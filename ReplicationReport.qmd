@@ -1,6 +1,6 @@
 ---
-title: "Replication of Study X by Sample & Sample (20xx, Psychological Science)"
-author: "Replication Author[s] (contact information)"
+title: "Replication of 'A utility-based account of the choice of constituent question polarity' by Lee & Hawkins (forthcoming, Proceedings of the Annual Meeting of the Cognitive Science Society)"
+author: "Seo-young Lee (sylee423@stanford.edu)"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 format:
   html:
@@ -77,7 +77,7 @@ You can comment this section out prior to final report with data collection.
   Sample size, demographics, data exclusions based on rules spelled out in analysis plan
 
 #### Differences from pre-data collection methods plan
-  Any differences from what was described as the original plan, or “none”.
+none.
 
 
 ## Results
@@ -86,24 +86,96 @@ You can comment this section out prior to final report with data collection.
 ### Data preparation
 
 Data preparation following the analysis plan.
-	
-```{r include=F}
+
+```{r include=F, exp1}
 ### Data Preparation
 
 #### Load Relevant Libraries and Functions
+library(tidyverse)
+library(tidyboot)
+library(ggthemes)
+library(here)
 
-#### Import data
+#### Import data & Prepare data for analysis - create columns etc.
+dat_exp1_raw <-
+  list.files(path = here("data", "experiment1"),
+             pattern = "\\.csv$",
+             full.names = TRUE) |>
+  map_df(\(x) read_csv(x, col_types = cols(.default = "c"))) |>
+  filter(trial_type == "survey-html-form" | trial_type == "survey-text") |>
+  pivot_wider(names_from = trial_type, values_from = response)
+
+# Clean up pivot (strategy responses are on alternating rows)
+for (i in seq(1, nrow(dat_exp1_raw), by = 2)) {
+  dat_exp1_raw$`survey-text`[i] <- dat_exp1_raw$`survey-text`[i + 1]
+}
 
 #### Data exclusion / filtering
+dat_exp1 <-
+  dat_exp1_raw |>
+  filter(!is.na(base_rate)) |>
+  select(prolific_pid, goal_condition, base_rate, raw_response,
+         trial_id, decision_structure, `survey-text`) |>
+  filter(!prolific_pid %in% c("6a08cd699b922a496ade5118", "6a0f01e87b645c17f1f77084", "6a060e333af0030611440211", "69bfa90568c64f3e06f1a32e", "6a0cdb1f925e91092971e70c"))|>
+  mutate(
+    base_rate = factor(base_rate),
+    goal_condition = factor(goal_condition, levels = c("uncont", "cont")),
+    prolific_pid = factor(prolific_pid)
+  ) |>
+  rename(strategy = `survey-text`)
 
-#### Prepare data for analysis - create columns etc.
 ```
+
+
+```{r include=F, exp2}
+### Data Preparation
+
+#### Import data & Prepare data for analysis - create columns etc.
+dat_exp2_raw <-
+  list.files(path = here("data", "experiment2"),
+             pattern = "\\.csv$",
+             full.names = TRUE) |>
+  map_df(\(x) read_csv(x, col_types = cols(.default = "c"))) |>
+  filter(!is.na(trial_id) | trial_type == "survey-text") |>
+  pivot_wider(names_from = trial_type, values_from = response)
+
+# Clean up pivot
+for (i in seq(1, nrow(dat_exp2_raw), by = 2)) {
+  dat_exp2_raw$`survey-text`[i] <- dat_exp2_raw$`survey-text`[i + 1]
+}
+
+#### Data exclusion / filtering
+dat_exp2 <- dat_exp2_raw |>
+  filter(!is.na(chosen_question)) |>
+  select(prolific_pid, goal_condition, decision_structure,
+         chosen_question, chose_positive, chose_negative,
+         base_rate, trial_id, `survey-text`) |>
+  filter(!prolific_pid %in% c("666efb72703de8fb31acc194"))|>
+  mutate(
+    goal_condition = factor(goal_condition, levels = c("uncont", "cont")),
+    decision_structure = factor(decision_structure, levels = c("singleton", "set_id")),
+    prolific_pid = factor(prolific_pid),
+    chose_contaminated = chose_positive == "true",
+    chose_uncontaminated = chose_negative == "true"
+  ) |>
+  rename(strategy = `survey-text`)
+```
+
+
 
 ### Confirmatory analysis
 
 The analyses as specified in the analysis plan.  
 
-*Side-by-side graph with original graph is ideal here*
+#### Experiment 1: Free response
+
+![lee-hawkins-2026](/lee_hawkins_2026/figures/exp1_results.pdf){#id .class width=240px height=120px} 
+![exp1_repl](/analysis/figures/exp1_results.pdf){#id .class width=240px height=120px}
+
+#### Experiment 2: Forced choice
+![lee-hawkins-2026](/lee_hawkins_2026/figures/exp2_results.pdf){#id .class width=240px height=120px} 
+![exp1_repl](/analysis/figures/exp2_results.pdf){#id .class width=240px height=120px}
+
 
 ### Exploratory analyses
 
