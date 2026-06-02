@@ -165,7 +165,7 @@ dat_exp2 <- dat_exp2_raw |>
 
 ### Confirmatory analysis
 
-The analyses as specified in the analysis plan.  
+#### Figures 
 
 #### Experiment 1: Free response
 
@@ -175,6 +175,37 @@ The analyses as specified in the analysis plan.
 #### Experiment 2: Forced choice
 ![lee-hawkins-2026](/lee_hawkins_2026/figures/exp2_results.pdf){#id .class width=240px height=120px} 
 ![exp1_repl](/analysis/figures/exp2_results.pdf){#id .class width=240px height=120px}
+
+#### Statistical analyses
+I performed simple logistic regression for the results of both experiments, rather than mixed-effects linear regression, since each participant completed only one trial (one data point = one participant).
+```{r exp1-regression}
+dat_exp1_coded <- read_csv("./analysis/exp1_coded.csv") |>
+  mutate(base_rate_num = as.numeric(as.character(base_rate)),
+         base_rate_c = base_rate_num - 0.5)  # center at 50%
+
+mod_exp1 <- glm(
+  chose_uncontaminated ~ goal_condition * base_rate_c,
+  data = dat_exp1_coded,
+  family = "binomial",
+  contrasts = list(goal_condition = "contr.sum")
+)
+
+summary(mod_exp1)
+```
+
+
+```{r exp2-regression}
+dat_exp2 <- read_csv("./analysis/exp2_processed.csv")
+
+mod_exp2 <- glm(
+  chose_uncontaminated ~ goal_condition,
+  data = dat_exp2,
+  family = "binomial",
+  contrasts = list(goal_condition = "contr.sum")
+)
+
+summary(mod_exp2)
+```
 
 
 ### Exploratory analyses
@@ -186,6 +217,9 @@ Any follow-up analyses desired (not required).
 ### Summary of Replication Attempt
 
 Open the discussion section with a paragraph summarizing the primary result from the confirmatory analysis and the assessment of whether it replicated, partially replicated, or failed to replicate the original result.  
+
+The replication attempt partially replicated the main qualitative results of the original study, namely the goal alignment effect. 
+
 
 ### Commentary
 
