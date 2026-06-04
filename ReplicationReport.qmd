@@ -17,9 +17,6 @@ Lee & Hawkins (2026) experimentally investigate the polarity preference in const
 
 ## Methods
 
-### Power Analysis
-
-(Original effect size, power analysis for samples to achieve 80%, 90%, 95% power to detect that effect size.  Considerations of feasibility for selecting planned sample size.)
 
 ### Planned Sample
 
@@ -69,12 +66,11 @@ Can also quote directly, though it is less often spelled out effectively for an 
 
 The main difference is the type of question that the study investigates. The original study investigated CQs, and the participants were asked to freely complete a CQ in Exp1, and performed a forced choice task between two opposite polarity CQs in Exp2 in the original study. The present replication study will keep the same free completion/forced-choice structure, but with PQs.
 
-### Methods Addendum (Post Data Collection)
-
-You can comment this section out prior to final report with data collection.
 
 #### Actual Sample
-  Sample size, demographics, data exclusions based on rules spelled out in analysis plan
+Exp1: 180 participants located in US, UK, Canada, whose primary language is English.
+Exp2: 80 participants located in US, UK, Canada, whose primary language is English.
+Participants who timed out/failed to type in the completion code on Prolific were excluded from the analysis.
 
 #### Differences from pre-data collection methods plan
 none.
@@ -216,11 +212,11 @@ Any follow-up analyses desired (not required).
 
 ### Summary of Replication Attempt
 
-Open the discussion section with a paragraph summarizing the primary result from the confirmatory analysis and the assessment of whether it replicated, partially replicated, or failed to replicate the original result.  
-
-The replication attempt partially replicated the main qualitative results of the original study, namely the goal alignment effect. 
+The replication attempt partially replicated the main qualitative results of the original study, namely the goal alignment effect. Participants generally preferred to ask (a variant of) "Which vials are not contaminated?" when the goal was to find uncontaminated vials. We observe, however, that the effect size is much smaller, resulting in no/marginal statistical significance.
 
 
 ### Commentary
 
-Add open-ended commentary (if any) reflecting (a) insights from follow-up exploratory analysis, (b) assessment of the meaning of the replication (or not) - e.g., for a failure to replicate, are the differences between original and present study ones that definitely, plausibly, or are unlikely to have been moderators of the result, and (c) discussion of any objections or challenges raised by the current and original authors about the replication attempt.  None of these need to be long.
+The replication results for polar questions suggest that there is a general, goal-relevant mechanism at play for both constituent and polar question polarity choice. Smaller effect sizes for polar questions are also expected, since the asymmetry between affirm/reject responses to PQs is predicted to be smaller than that between mentioned/unmentioned individuals in responses to CQs. The replication results suggest that a bigger sample size would be needed to properly power the experiments, and also point towards a need for more variegated scenarios/cover stories.
+
+
